@@ -1,0 +1,41 @@
+<template name="calljournal">
+  <div class="container">
+    <h1>Журнал звонков</h1>
+    <div class="row" style="margin-bottom: 50px;">
+      <div class="col-12 col-lg-8">
+        <h2>Virtual Field Test</h2>
+        {{> calllogform}}
+      </div>
+    </div>
+    {{> logtable}}
+  </div>
+</template>
+
+<template name="calllogform">
+ <!-- {{#if showPersonForm}}-->
+  {{> quickForm collection="Calllogs" validation="keyup" id="insertBookForm" type="insert"}}
+</template>
+
+
+
+<template name="logtable">
+  <table class="table table-bordered table-striped table-hover">
+    <thead>
+      <tr>
+        {{#each cols}}
+        <th>{{label}}</th>
+        {{/each}}
+      </tr>
+    </thead>
+    <tbody>
+      {{#each rows}}
+      <tr>
+        {{#each cols}}
+          <td>{{val .. [name]}}</td>
+        {{/each}}
+      </tr>
+     {{/each}}
+    </tbody>
+  </table>
+</template>
+
