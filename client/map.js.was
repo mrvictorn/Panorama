@@ -1,0 +1,97 @@
+// map.js
+// gmaps api key AIzaSyD2Wus29oCZXwaTjMJ6qupv26fi5NEWUrw
+Template.map.events({
+    'submit form': function(e, tmpl) {
+      e.preventDefault();
+      var searchInput = $(e.target).find('#address');
+
+      tmpl.newMap.removeMarkers();
+      tmpl.mapEngine.geocode({
+        address: searchInput.val(),
+        callback: function(results, status) {
+          if (status == 'OK') {
+            var latlng = results[0].geometry.location;
+            tmpl.newMap.setCenter(latlng.lat(), latlng.lng());
+            tmpl.newMap.addMarker({
+              lat: latlng.lat(),
+              lng: latlng.lng(),
+              draggable: true,
+              dragend: function() {
+                var point = this.getPosition();
+                tmpl.mapEngine.geocode({location: point, callback: function(results) {
+                  searchInput.val(results[0].formatted_address);
+                  tmpl.newMap.setCenter(results[0].geometry.location.lat(), results[0].geometry.location.lng());
+                }});
+              }
+            });
+            searchInput.val(results[0].formatted_address);
+          } else {
+            console.log(status);
+          }
+        }
+      });
+
+    }
+});
+
+Template.mapCanvas2.helpers({
+  messErrDecodedAddresses: function () {
+  	var n=Session.get("nAddressDecodedCount");
+    return n>0?""+n+" Помилок декодування адрес":"";
+  }
+});
+
+
+
+Template.mapCanvas2.rendered = function () {
+	var tmpl = Template.mapCanvas2;
+	var mapCenterLL, geocoder;
+   	GoogleMaps.init(
+	    {
+	        'sensor': true, //optional
+	        'key': 'AIzaSyD2Wus29oCZXwaTjMJ6qupv26fi5NEWUrw'
+	        //, 'language': 'de' //optional
+	    }, 
+	    function(){
+	    	mapCenterLL = new google.maps.LatLng(50.4069723,30.6344475); //Дарница:)
+			geocoder = new google.maps.Geocoder();
+	        var mapOptions = {
+	            zoom: 13,
+	            center: mapCenterLL,
+	            mapTypeId: google.maps.MapTypeId.ROADMAP
+	        };
+	        tmpl.map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions); 
+	    	Session.set("nAddressDecodedCount", 0);
+			var numAddressDecodedCount =0; 
+			
+			tmpl.liveMarkers = LiveMaps.addMarkersToMap(
+				  tmpl.map,
+				  [ {
+				    cursor: HouseHolds.find(),
+				    transform: function(document) {
+				    	function getHomePosition(doc) {
+				    		geocoder.geocode( { 'address': doc.street+""+doc.buildingNumber, 'latLng':mapCenterLL}, 
+				    							function(results, status) {if (status == google.maps.GeocoderStatus.OK) {
+																        		return results[0].geometry.location  
+																      		} else {numAddressDecodedCount++;};
+																      	});
+				    	};
+				      return {
+				        title: document.buildingNumber + ' ' + document.appartmentsCount,
+				        position: getHomePosition(document),
+				        animation: google.maps.Animation.BOUNCE,
+				        icon: '/icons/home-bage.png'
+				      };
+				    }
+				  } ]
+			);
+			Session.set("nAddressDecodedCount", numAddressDecodedCount);
+	    }
+	);
+
+};
+
+
+
+
+

@@ -1,0 +1,48 @@
+
+<template name="map">
+  
+      {{> mapCanvas2}}
+  
+</template>
+
+<template name="mapCanvas2">
+	<div class="row">
+		<div class="col-sm-2">
+			<div class="row">
+				<div class="table-responsive">
+					<table class="table table-hover table-condensed">
+						<tr><th>Зони</th><th class="text-center">Під`їздів</th><th class="text-center">Квартир</th></tr>			
+						<tbody>
+	  					<tr>
+	  						<th><button id='btnShowAllPoints' type="button" class="btn btn-sm {{isCheckedAP}}"> Всі разом </button></th>
+	  						<th class="text-right">{{numAllEntrances}}</th>
+	  						<th class="text-right">{{numAllHouseHolds}}</th>
+	  					</tr>	
+	  					<tr>
+	  						<th><button id='btnAddZone' type="button" class="btn btn-sm "> <span class="glyphicon glyphicon-plus"></span> Додати зону</button></th>
+	  						<th></th>
+	  						<th></th>
+	  					</tr>	
+	  					</tbody>
+	  				</table>
+				</div>	
+			</div>
+			<div class="row">
+				<div class="totals" >
+					<button id='btnTotals' type="button" class="btn btn-primary  btn-block">Ітоги</button>
+					<button type="button" class="btn btn-danger btn-block">
+						Помилок в геокодувані: {{messErrDecodedAddresses}}
+					</button>
+					<button id='btnCalcGeoPos' type="button" class="btn btn-warning btn-block">
+						Адрес без геопозиції: {{noPosAddresses}}
+					</button>
+					
+				</div>	
+			</div>	
+		</div>
+		<div id="map-container" class="col-sm-10">
+			<div id="map-canvas">	
+		    </div>
+		</div>
+    </div>
+</template>

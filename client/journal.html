@@ -1,24 +1,25 @@
-<template name="calljournal">
+<template name="hhregister">
   <div class="container">
-    <h1>Журнал звонков</h1>
+    <h2>База <small> домовладения</small></h2>
     <div class="row" style="margin-bottom: 50px;">
       <div class="col-12 col-lg-8">
-        <h2>Virtual Field Test</h2>
-        {{> calllogform}}
+        <h3>Внести дом в базу</h3>
+        {{> hhinputform}}
       </div>
     </div>
-    {{> logtable}}
+    <h3>Просмотр всех домовладений</h3>
+    {{> hhtable}}
   </div>
 </template>
 
-<template name="calllogform">
+<template name="hhinputform">
  <!-- {{#if showPersonForm}}-->
-  {{> quickForm collection="Calllogs" validation="keyup" id="insertBookForm" type="insert"}}
+  {{> quickForm collection="HouseHolds" validation="keyup" id="insertHHForm" type="insert"}}
 </template>
 
 
 
-<template name="logtable">
+<template name="zzz_hhtable">
   <table class="table table-bordered table-striped table-hover">
     <thead>
       <tr>
@@ -39,3 +40,12 @@
   </table>
 </template>
 
+
+<template name="hhtable">
+  <div id="table">
+ <!-- {{> reactiveTable collection=households settings=householdsTableSettings}}
+ -->
+ {{> reactiveTable collection=cHouseHolds settings=householdsTableSettings}}
+
+  </div>
+</template>

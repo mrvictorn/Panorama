@@ -1,49 +1,98 @@
-clschema =  {
-        owner: 
+hhSchema =  {
+        inputtedByUser: 
         {   type: Object,
-            autoValue: function (){return Meteor.userid()},
+            autoValue: function (){return Meteor.userId()},
         },
-        date:
+        whenInputted:
          {  type: Date,
-            label: "Дата звонку",
+            label: "Дата внесення",
             optional: false
         },
-        client: {
+        agent: {
             type: String,
-            label: "Ф.І.П. клієнта"
+            label: "Агент",
+            optional: false
         },
-        phonenumber: {
+        street: {
+            type: String,
+            label: "Вулиця",
+            optional: false
+        },
+        buildingNumber:
+         {
+            type: String,
+            label: "Номер дому",
+            optional: false
+        },
+        buildingCorpsNumber:
+         {
+            type: String,
+            label: "Корпус",
+            optional: true
+        },
+        entranceCount:
+         {
             type: Number,
-            label: "Номер телефону",
-            min: 0
+            label: "Кількість під`їздів",
+            optional: false
         },
-        ourmessage:
+        appartmentsByEntrancesDesc:
          {
             type: String,
-            label: "Наше повідомлення",
-            optional: false,
-            max: 200
+            label: "Кількість квартир в під`їздах"
         },
-        clientanswer:
+        appartmentsCount:
+         {
+            type: Number,
+            label: "Кількість квартир в будинку",
+            optional: false
+        },
+        entranceGuardType:
          {
             type: String,
-            label: "Відповідь клієнта",
-            optional: false,
-            max: 200
+            label: "Вид доступу"
         },
-        summary: {
+        entranceServiceCompany:
+         {
             type: String,
-            label: "Результат",
+            label: "Сервісна компанія"
+        },
+        notes: {
+            type: String,
+            label: "Примітки",
             optional: true,
             max: 1000
-        }
+        },
+        position:
+        {type: Object,
+        optional:true}
 };
 
-Calllogs = new Meteor.Collection("calllogs", {schema: clschema});
+zonesSchema =  {
+        title: 
+        {   type: String,
+            autoValue: function (){return "*Нова зона"}
+        },
+        type: 
+        {   type: String
+            
+        },
+        points:
+        {   type: [Object],
+            optional: true
+        }
+}
 
-Calllogs.allow({
+
+HouseHolds = new Meteor.Collection("households");
+//HouseHolds = new Meteor.Collection("households", {schema: hhSchema});
+
+Zones = new Meteor.Collection("zones",zonesSchema);
+
+
+HouseHolds.allow({
   insert: function (userId, party) {
-    return true; // no cowboy inserts -- use createParty method
+    return true; 
   },
   update: function (userId, party, fields, modifier) {
      return true;
@@ -53,3 +102,6 @@ Calllogs.allow({
     return party.owner === userId ;
   }
 });
+
+
+

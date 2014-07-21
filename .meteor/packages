@@ -10,5 +10,6 @@ collection2
 simple-schema
 standard-app-packages
 collection-helpers
-bootstrap
 email
+coffeescript
+accounts-facebook

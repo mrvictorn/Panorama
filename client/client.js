@@ -1,1 +1,2 @@
-Meteor.subscribe("calllogs");
+Meteor.subscribe("households");
+Meteor.subscribe("zones");
