@@ -68,7 +68,13 @@ hhSchema =  {
         optional:true}
 };
 
+ZONE_TYPE_HOUSEHOLDS='HouseHolds';
 zonesSchema =  {
+        owner: 
+        {   type: Object, //!!! cross reference type need here!! to be changed!
+            autoValue: function (){return Meteor.userId()},
+        },
+
         title: 
         {   type: String,
             autoValue: function (){return "*Нова зона"}
@@ -83,6 +89,11 @@ zonesSchema =  {
         }
 }
 
+
+function ifSuperAdmin()
+{
+    return true;// just stub, till user system is implemented!
+}
 
 HouseHolds = new Meteor.Collection("households");
 //HouseHolds = new Meteor.Collection("households", {schema: hhSchema});
@@ -103,5 +114,17 @@ HouseHolds.allow({
   }
 });
 
+Zones.allow({
+  insert: function (userId, doc) {
+    return true; 
+  },
+  update: function (userId, doc, fields, modifier) {
+     return true;
+  },
+  remove: function (userId, doc) {
+    // You can only remove parties that you created and nobody is going to.
+    return (doc.owner === userId) || ifSuperAdmin() ;
+  }
+});
 
 

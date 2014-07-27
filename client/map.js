@@ -2,13 +2,14 @@
 // gmaps api key AIzaSyD2Wus29oCZXwaTjMJ6qupv26fi5NEWUrw
 
 var ourCityName="Киев, ";
-		
+Session.setDefault("addNewZoneNow", false);		
+Session.setDefault("EditZoneNow",null);
 
 function showMarkers(){
-var curr= HouseHolds.find({position:{$exists:true}});
-if(curr.count()<1) return;
-var tmpl=Template.mapCanvas2;
-tmpl.liveMarkers = LiveMaps.addMarkersToMap(tmpl.map,
+  var curr= HouseHolds.find({position:{$exists:true}});
+  if(curr.count()<1) return;
+  var tmpl=Template.mapCanvas2;
+  tmpl.liveMarkers = LiveMaps.addMarkersToMap(tmpl.map,
 			  [ {
 			    cursor: curr,
 			    transform: function(document) { //var r={}; getGoogleMapPosition(document,r); 
@@ -24,6 +25,7 @@ tmpl.liveMarkers = LiveMaps.addMarkersToMap(tmpl.map,
 		);
 };
 
+
 Template.mapCanvas2.setAllMap = function (map) {
 	var markers=Template.mapCanvas2.markers;
 	for (var key in markers) {
@@ -37,30 +39,71 @@ Template.mapCanvas2.toggleMarkers = function (state) {
   	Template.mapCanvas2.setAllMap(state?tmpl.map:null);
 }
 
-// Deletes all markers in the array by removing references to them.
-function deleteMarkers() {
-  clearMarkers();
-  markers = [];
+Template.mapCanvas2.addNewZoneNow = function (state) { 
+  return Session.get('addNewZoneNow');
 }
 
 
+Template.mapCanvas2.zones = function(){
+  return Zones.find({});
+}
+
+
+
 Template.mapCanvas2.events({
-    'click #btnTotals':  function(e, tmpl) {
-      e.preventDefault();
-      showMarkers();
+  'click #btnTotals':  function(e, tmpl) {
+    e.preventDefault();
+    showMarkers();
  	} ,
  	'click #btnCalcGeoPos':  function(e, tmpl) {
+    e.preventDefault();
+    console.log('getting geo positions');
+    getPositions2HouseHolds();
+  },
+  'click #btnAddZone':  function(e, tmpl) {
+    e.preventDefault();
+    // 2 add: disable button btnAddNewZone
+    st=Session.get("addNewZoneNow");
+    if (st) {
+      title=tmpl.find("#inputNewZoneTitle").value;
+      // 2 add: check for sanity and unique our  inputNewZoneTitle.value !!!
+      if (!(title ==="")){
+        Zones.insert({title:title,type:ZONE_TYPE_HOUSEHOLDS});
+        tmpl.find("#inputNewZoneTitle").value="";
+        Session.set("addNewZoneNow",  false);   
+      } 
+    }
+    else {Session.set("addNewZoneNow",  true);};
+  },
+  'dblclick .zone-cell':  function(e, tmpl) {
+    e.preventDefault();
+    id=e.target.id;
+    if(Session.get("EditZoneNow")==null) {Session.set("EditZoneNow",id);};
+  },
+  'keypress #inputEditZoneTitle':function(e, tmpl) {
+    if(e.keyCode == 13){
       e.preventDefault();
-      console.log('getting geo positions');
- 	  getPositions2HouseHolds();
- 	},
-    'click #btnShowAllPoints':  function(e, tmpl) {
+      newTitle=tmpl.find("#inputEditZoneTitle").value;
+      //2 add: check for unique title!
+      if(!Zones.findOne({title:newTitle})){
+        Zones.update({_id:Session.get("EditZoneNow")}, {$set: {title:newTitle}});
+      }
+     Session.set("EditZoneNow",null); 
+   }
+  },    
+ /* 'click':function(e, tmpl) {//chasing for marker click evt
+    if(e.keyCode == 13){
       e.preventDefault();
-      console.log('toggle show all markers');
-      var a=Session.get("showAllPoints");
-      Session.set("showAllPoints",!a);
-      Template.mapCanvas2.toggleMarkers(!a);
-      } 	     
+      }
+   
+  },*/      
+  'click #btnShowAllPoints':  function(e, tmpl) {
+    e.preventDefault();
+    console.log('toggle show all markers');
+    var a=Session.get("showAllPoints");
+    Session.set("showAllPoints",!a);
+    Template.mapCanvas2.toggleMarkers(!a);
+  } 	     
 });
 
 Template.mapCanvas2.helpers({
@@ -80,8 +123,15 @@ Template.mapCanvas2.helpers({
   		if (typeof a == 'number'){ anumAllHouseHolds+=a;}});
 	return anumAllHouseHolds;
   },
+  numBuildings: function() {
+  	return HouseHolds.find().count();
+  },
+
   isCheckedAP: function() {
   	return Session.get("showAllPoints")?" active":"";
+  },
+  isEditZoneNow: function(id) {
+    return Session.get("EditZoneNow") == id;
   },
   noPosAddresses: function() {
 	var curr=HouseHolds.find({position:{$exists:false}});
@@ -178,10 +228,38 @@ LiveMaps = {
     }
   };
 
+
+
+
+function getIcon(color) {
+    return MapIconMaker.createMarkerIcon({width: 20, height: 34, primaryColor: color, cornercolor:color});
+}  
+
+function setOnClickToMarker(marker){
+	var m=marker;
+	smarkers=Template.mapCanvas2.selectedMarkers;
+  	google.maps.event.addListener(marker, 'rightclick', function (event) {
+	    event.stop(); var color = "#FE7569";
+	    if(!m.isSelected){
+	      m.isSelected=true;
+	      smarkers.push(m);
+	      m.setAnimation(google.maps.Animation.DROP);
+	      color = "#0000FF";
+	      //window.setTimeout(function() { }, 3000);
+	    } else {
+		  m.isSelected=false;
+	      m.setAnimation(null);
+	      smarkers.remove(m);
+	    };
+	    m.setImage(getIcon(color).image);
+	});
+}
   liveMarkers = function(map, cursor) {
     var addMarker, liveQuery, markers, removeMarker, transform;
     Template.mapCanvas2.markers = [];
     markers = Template.mapCanvas2.markers;
+    Template.mapCanvas2.selectedMarkers = [];
+    smarkers=Template.mapCanvas2.selectedMarkers;
     if (cursor.observe) {
       transform = function(doc) {
         return {
@@ -201,7 +279,9 @@ LiveMaps = {
       if (!options.map) {
         options.map = map;
       }
-      return markers[doc._id] = new google.maps.Marker(options);
+      m=new google.maps.Marker(options);
+      setOnClickToMarker(m);
+      return markers[doc._id] = m;
     };
     removeMarker = function(doc) {
       markers[doc._id].setMap(null);
@@ -231,30 +311,25 @@ LiveMaps = {
     this.LiveMaps = LiveMaps;
   }
 
-
+function keyController(evt){
+  if(evt.keyCode==27 && Session.get("addNewZoneNow")) {
+    Session.set("addNewZoneNow", false);
+  } 
+}
 
 Template.mapCanvas2.rendered = function () {
 	var tmpl = Template.mapCanvas2;
-	
-	//var mapCenterLL, geocoder;
-   	GoogleMaps.init(
-	    {
-	        'sensor': true, //optional
-	        'key': 'AIzaSyCgGSK4bE6on5zjLUwG62FpNi5XBt6RQTc'
-	        //, 'language': 'de' //optional
-	    }, 
-	    function(){
-	    	 //Дарница:)
-   			tmpl.mapCenterLL = new google.maps.LatLng(50.4089071,30.6554254);
-			geocoder = new google.maps.Geocoder();
-	        var mapOptions = {
-	            zoom: 14,
-	            center: tmpl.mapCenterLL,
-	            mapTypeId: google.maps.MapTypeId.ROADMAP
-	        };
-	        tmpl.map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions); 
-	       
-	      });
+	//Дарница:)
+	tmpl.mapCenterLL = new google.maps.LatLng(50.4089071,30.6554254);
+	geocoder = new google.maps.Geocoder();
+    var mapOptions = {
+        zoom: 14,
+        center: tmpl.mapCenterLL,
+        mapTypeId: google.maps.MapTypeId.ROADMAP
+    };
+    tmpl.map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
+    $('body').on('keydown',keyController); 
+    google.maps.Map.enableKeyDragZoom();
 };
 
 
