@@ -50,25 +50,31 @@
 	  								<input type="text" name="zone" id="inputEditZoneTitle" class="form-control" value="{{title}}" required="required">
 	  							{{else}}
 	  								{{title}}
+	  								<span class="edit-zone-bounds glyphicon {{zoneBoundsMode _id}}" id="editZone{{_id}}" style="color:{{color}}"></span>
+	  								<span class="delete-button glyphicon glyphicon-remove" id="deleteZone{{_id}}"></span>
 	  							{{/if}} 
-	  							</th>
-	  						<th class="text-right"> zone.buildingsTotal</th>	
-	  						<th class="text-right"> zone.entrancesTotal</th>
-	  						<th class="text-right"> zone.entrancesHouseHolds</th>
+	  						</th>
+	  						<th class="text-right"> {{zone.buildingsTotal}}</th>	
+	  						<th class="text-right"> {{zone.entrancesTotal}}</th>
+	  						<th class="text-right"> {{zone.entrancesHouseHolds}}</th>
 	  					</tr>
-	  						
 	  					{{/each}}
-	  					<tr>
-	  						<th>
+	  					{{#if hasSelectedMarkers}}
+		  					<tr>
+		  						<th id="selected">Вибрано:</th>
+		  						<th class="text-right">{{numSelectedBuildings}}</th>
+	  							<th class="text-right">{{numSelectedEntrances}}</th>
+	  							<th class="text-right">{{numSelectedHouseHolds}}</th>
+		  					</tr>
+	  					{{/if}}	
+	  					<tfoot>
+	  						<div class="form-group">
 	  							{{#if addNewZoneNow}}
-	  								<input type="text" name="title" id="inputNewZoneTitle" class="form-control" value="*Нова зона" required="required" pattern="" title="">
+	  								<input type="text" name="title" id="inputNewZoneTitle" class="form-control" value="*Нова зона" required="required">
 	  							{{/if}}
 	  							<button id='btnAddZone' type="button" class="btn btn-sm "> <span class="glyphicon glyphicon-plus"></span> Додати зону</button>
-	  						</th>
-	  						<th></th>
-	  						<th></th>
-	  					</tr>	
-
+	  						</div>
+	  					</tfoot>
 	  					</tbody>
 	  				</table>
 				</div>	

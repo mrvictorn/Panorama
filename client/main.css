@@ -12,6 +12,14 @@
 	padding:0px;
 }
 
+.delete-button, .edit-zone-bounds {
+width: 14px;
+height: 14px;
+margin: 2px;
+float: right;
+cursor: pointer;
+}
+
 .centered{
 	text-align: center;
 }

@@ -22,8 +22,11 @@
  * limitations under the License. 
  */
 
-var StyledIconTypes = {};
-var StyledMarker, StyledIcon;
+ 
+window.plugStyledMarkers = function () {
+  window.StyledIconTypes = window.StyledIconTypes || {};
+
+  var StyledMarker, StyledIcon;
 
 /**
  * @param {Function} childCtor Child class.
@@ -38,8 +41,6 @@ function inherits(childCtor, parentCtor) {
   /** @override */
   childCtor.prototype.constructor = childCtor;
 }
- 
-(function() {
   var bu_ = 'https://chart.googleapis.com/chart?chst=';
   var gm_ = google.maps;
   var gp_ = gm_.Point;
@@ -114,7 +115,7 @@ function inherits(childCtor, parentCtor) {
       }
     }
 
-    if (styledIconType !== StyledIconTypes.CLASS) {
+    if (styledIconType !== window.StyledIconTypes.CLASS) {
       for (k in styledIconType.defaults) {
         me.set(k, styledIconType.defaults[k]);
       }
@@ -172,9 +173,9 @@ function inherits(childCtor, parentCtor) {
   * @return {google.maps.MarkerShape}
   */
   
-  StyledIconTypes.CLASS = {};
+  window.StyledIconTypes.CLASS = {};
   
-  StyledIconTypes.MARKER = {
+  window.StyledIconTypes.MARKER = {
     defaults: {
       text:'',
       color:'00ff00',
@@ -237,7 +238,7 @@ function inherits(childCtor, parentCtor) {
       return _iconmap;
     }
   };
-  StyledIconTypes.BUBBLE = {
+  window.StyledIconTypes.BUBBLE = {
     defaults: {
       text:'',
       color:'00ff00',
@@ -276,4 +277,7 @@ function inherits(childCtor, parentCtor) {
       return _iconmap;
     }
   };
-})();
+  window.StyledMarker = window.StyledMarker|| StyledMarker; 
+  window.StyledIcon = window.StyledIcon|| StyledIcon; 
+  
+};

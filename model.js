@@ -83,7 +83,11 @@ zonesSchema =  {
         {   type: String
             
         },
-        points:
+        color:
+        { type:String,
+          autoValue: function(){return "#999999" }// default grey
+        },
+        bounds:
         {   type: [Object],
             optional: true
         }
