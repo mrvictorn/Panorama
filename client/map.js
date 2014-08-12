@@ -37,7 +37,6 @@ function showMarkers(){
 
 function showZones(){
   var curr= Zones.find({bounds:{$exists:true}});
-  if(curr.count()<1) return;
   var tmpl=Template.mapCanvas2;
   tmpl.liveZones = LiveMaps.addZonesToMap(tmpl.map,[ {cursor: curr}]);
 };
@@ -474,7 +473,7 @@ liveZones = function(map, cursor) {
           strokeColor: doc.color,
           strokeOpacity: 0.45,
           map:map,
-          paths: doc.bounds;
+          paths: doc.bounds,
           title: doc.title 
         };
       };
@@ -501,7 +500,7 @@ liveZones = function(map, cursor) {
     };
     liveQuery = cursor.observe({
       added: addZone,
-      changed: function(newDoc, oldDoc) {
+      changed: function(newDoc, oldDoc) {//////////////////////////////////////////////////////////////////////////////////////
         removeZone(oldDoc);
         return addZone(newDoc);
       },
@@ -544,9 +543,10 @@ Template.mapCanvas2.rendered = function () {
         mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     tmpl.map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
-    showMarkers();
     $('body').on('keydown',keyController); 
     plugStyledMarkers();
+    showZones();
+    showMarkers();
 };
 
 function clearZoneSelection() {
