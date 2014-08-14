@@ -36,7 +36,7 @@ function showMarkers(){
 }
 
 function showZones(){
-  var curr= Zones.find({bounds:{$exists:true}});
+  var curr= Zones.find({encbounds:{$exists:true}});
   var tmpl=Template.mapCanvas2;
   tmpl.liveZones = LiveMaps.addZonesToMap(tmpl.map,[ {cursor: curr}]);
 };
@@ -72,7 +72,7 @@ Template.mapCanvas2.hasSelectedMarkers = function () {
 }
 
 
-Template.mapCanvas2.zones = function(){
+Template.mapCanvas2.listzones = function(){
   return Zones.find({});
 }
 
@@ -446,59 +446,64 @@ liveMarkers = function(map, cursor) {
     this.LiveMaps = LiveMaps;
   }
 
+
+function saveZoneBounds(aShape){
+  if(!aShape) {console.log("error saveZoneBounds() - shape undefined");return;};
+  var encbounds = google.maps.geometry.encoding.encodePath(aShape.getPath());
+  Zones.update({_id:aShape.zoneId},{$set:{encbounds:encbounds}});
+}
+
+
 liveZones = function(map, cursor) {
-    var addZone, liveQuery, zones, removeZone, transform;
-    zones = Template.mapCanvas2.zones;
-    if (cursor.observe) {
-      transform = function(doc) {
-        return {
-          /*  google.maps.PolygonOptions:
-          clickable boolean Indicates whether this Polygon handles mouse events. Defaults to true.
-          draggable boolean If set to true, the user can drag this shape over the map. The geodesic property defines the mode of dragging. Defaults to false.
-          editable  boolean If set to true, the user can edit this shape by dragging the control points shown at the vertices and on each segment. Defaults to false.
-          fillColor string  The fill color. All CSS3 colors are supported except for extended named colors.
-          fillOpacity number  The fill opacity between 0.0 and 1.0
-          geodesic  boolean When true, edges of the polygon are interpreted as geodesic and will follow the curvature of the Earth. When false, edges of the polygon are rendered as straight lines in screen space. Note that the shape of a geodesic polygon may appear to change when dragged, as the dimensions are maintained relative to the surface of the earth. Defaults to false.
-          map Map Map on which to display Polygon.
-          paths MVCArray.<MVCArray.<LatLng>>|MVCArray.<LatLng>|Array.<Array.<LatLng|LatLngLiteral>>|Array.<LatLng|LatLngLiteral>  The ordered sequence of coordinates that designates a closed loop. Unlike polylines, a polygon may consist of one or more paths. As a result, the paths property may specify one or more arrays of LatLng coordinates. Paths are closed automatically; do not repeat the first vertex of the path as the last vertex. Simple polygons may be defined using a single array of LatLngs. More complex polygons may specify an array of arrays. Any simple arrays are converted into MVCArrays. Inserting or removing LatLngs from the MVCArray will automatically update the polygon on the map.
-          strokeColor string  The stroke color. All CSS3 colors are supported except for extended named colors.
-          strokeOpacity number  The stroke opacity between 0.0 and 1.0
-          strokePosition  StrokePosition  The stroke position. Defaults to CENTER. This property is not supported on Internet Explorer 8 and earlier.
-          strokeWeight  number  The stroke width in pixels.
-          visible boolean Whether this polygon is visible on the map. Defaults to true.
-          zIndex  number  The zIndex compared to other polys.
-          */
-          fillColor: doc.color,
-          fillOpacity: 0.45,
-          strokeColor: doc.color,
-          strokeOpacity: 0.45,
-          map:map,
-          paths: doc.bounds,
-          title: doc.title 
-        };
-      };
-    } else {
-      transform = cursor.transform;
-      cursor = cursor.cursor;
-    }
-    addZone = function(doc) {
+  var addZone, liveQuery, zones, removeZone, transform;
+  zones = Template.mapCanvas2.zones;
+  transform = function(doc) {
+    var paths = google.maps.geometry.encoding.decodePath(doc.encbounds);
+    return {
+      /*  google.maps.PolygonOptions:
+      clickable boolean Indicates whether this Polygon handles mouse events. Defaults to true.
+      draggable boolean If set to true, the user can drag this shape over the map. The geodesic property defines the mode of dragging. Defaults to false.
+      editable  boolean If set to true, the user can edit this shape by dragging the control points shown at the vertices and on each segment. Defaults to false.
+      fillColor string  The fill color. All CSS3 colors are supported except for extended named colors.
+      fillOpacity number  The fill opacity between 0.0 and 1.0
+      geodesic  boolean When true, edges of the polygon are interpreted as geodesic and will follow the curvature of the Earth. When false, edges of the polygon are rendered as straight lines in screen space. Note that the shape of a geodesic polygon may appear to change when dragged, as the dimensions are maintained relative to the surface of the earth. Defaults to false.
+      map Map Map on which to display Polygon.
+      paths MVCArray.<MVCArray.<LatLng>>|MVCArray.<LatLng>|Array.<Array.<LatLng|LatLngLiteral>>|Array.<LatLng|LatLngLiteral>  The ordered sequence of coordinates that designates a closed loop. Unlike polylines, a polygon may consist of one or more paths. As a result, the paths property may specify one or more arrays of LatLng coordinates. Paths are closed automatically; do not repeat the first vertex of the path as the last vertex. Simple polygons may be defined using a single array of LatLngs. More complex polygons may specify an array of arrays. Any simple arrays are converted into MVCArrays. Inserting or removing LatLngs from the MVCArray will automatically update the polygon on the map.
+      strokeColor string  The stroke color. All CSS3 colors are supported except for extended named colors.
+      strokeOpacity number  The stroke opacity between 0.0 and 1.0
+      strokePosition  StrokePosition  The stroke position. Defaults to CENTER. This property is not supported on Internet Explorer 8 and earlier.
+      strokeWeight  number  The stroke width in pixels.
+      visible boolean Whether this polygon is visible on the map. Defaults to true.
+      zIndex  number  The zIndex compared to other polys.
+      */
+      fillColor: doc.color,
+      fillOpacity: 0.35,
+      strokeColor: doc.color,
+      strokeOpacity: 0.55,
+      map:map,
+      paths: paths,
+      title: doc.title 
+    };
+  };
+  addZone = function(doc) {
+      if (zones[doc._id]) {return;};
       var options;
+
       options = transform(doc);
       if (!options.map) {
         options.map = map;
       }
       var m = new google.maps.Polygon(options);
       //m=new google.maps.Marker(options);
-      google.maps.event.addListener(m, 'click', function() {
-        setSelection(m);
-      });
+      m.zoneId=doc._id;
+      addEvents2ZoneShape(m);
       return zones[doc._id] = m;
     };
     removeZone = function(doc) {
       zones[doc._id].setMap(null);
       return delete zones[doc._id];
     };
-    liveQuery = cursor.observe({
+    liveQuery = cursor.cursor.observe({
       added: addZone,
       changed: function(newDoc, oldDoc) {//////////////////////////////////////////////////////////////////////////////////////
         removeZone(oldDoc);
@@ -544,10 +549,27 @@ Template.mapCanvas2.rendered = function () {
     };
     tmpl.map = new google.maps.Map(document.getElementById("map-canvas"), mapOptions);
     $('body').on('keydown',keyController); 
+    google.maps.event.addListener(tmpl.map, 'click', clearZoneSelection);
     plugStyledMarkers();
     showZones();
-    showMarkers();
+ //   showMarkers();
+
 };
+
+function addEvents2ZoneShape(shape){
+  google.maps.event.addListener(shape, 'click', function() {
+    setSelection(shape);
+  });
+  google.maps.event.addListener(shape.getPath(), 'set_at', function() {
+    saveZoneBounds(shape);
+  });
+  google.maps.event.addListener(shape.getPath(), 'insert_at', function() {
+     saveZoneBounds(shape);
+  });
+      
+}
+
+
 
 function clearZoneSelection() {
   if (selectedShape) {
@@ -557,32 +579,22 @@ function clearZoneSelection() {
   }
 }
 
-function saveZoneBounds(aShape){
-  if(!aShape) {console.log("error saveZoneBounds() - shape undefined");return;};
-  var bounds = {};
-  abounds = aShape.getPaths();
-  abounds.forEach(function(xy, i) {
-    bounds[i]=[];   
-    xy.forEach(function(node, n) {
-      bounds[i][n]=new google.maps.LatLng(node.lat(),node.lng());
-      });
-  });
-  Zones.update({_id:aShape.zoneId},{$set:{bounds:bounds}});
-}
+function setSelection(shape) {
+  clearZoneSelection();
+  selectedShape = shape;
+  shape.setEditable(true);
+  selectedZone=Zones.findOne({_id:shape.zoneId});
+  Session.set("EditZoneBounds",selectedZone);
+}  
+  
+
 
 function enableZoneDrawingManager(map){
   var zone2edit= Session.get("EditZoneBounds");
-  
-  function setSelection(shape) {
-        clearZoneSelection();
-        selectedShape = shape;
-        shape.setEditable(true);
-        selectedZone=Zones.findOne({_id:shape.zoneId});
-        Session.set("EditZoneBounds",selectedZone);
-   }  
   var polyOptions = {
-    strokeWeight: 0,
-    fillOpacity: 0.45,
+    strokeColor: zone2edit.color,
+    strokeOpacity: 0.55,
+    fillOpacity: 0.35,
     editable: true,
     fillColor:zone2edit.color
   };
@@ -591,14 +603,11 @@ function enableZoneDrawingManager(map){
   drawingManager =  drawingManager || new google.maps.drawing.DrawingManager({
     drawingMode: google.maps.drawing.OverlayType.POLYGON,
     drawingControlOptions: {drawingModes:[google.maps.drawing.OverlayType.POLYGON]},
-    markerOptions: {
-      draggable: true
-    },
     polygonOptions: polyOptions,
     map: map
   });
-
   drawingManager.polygonOptions=polyOptions;
+  drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
   google.maps.event.addListener(drawingManager, 'overlaycomplete', function(e) {
       if (e.type == google.maps.drawing.OverlayType.POLYGON) {
       drawingManager.setDrawingMode(null);
@@ -608,20 +617,18 @@ function enableZoneDrawingManager(map){
       var newShape = e.overlay;
       newShape.type = e.type;
       var zone=Session.get("EditZoneBounds");
-      if(!zone){e.preventDefault(); return;};
+      if(!zone){delete e; return;};
       newShape.zoneId=zone._id;
+      zones=Template.mapCanvas2.zones;
+      zones[zone._id]=newShape;
       saveZoneBounds(newShape);
-      google.maps.event.addListener(newShape, 'click', function() {
-        setSelection(newShape);
-      });
+      addEvents2ZoneShape(newShape); 
       setSelection(newShape);
     }
   });
-
   // Clear the current selection when the drawing mode is changed, or when the
   // map is clicked.
   google.maps.event.addListener(drawingManager, 'drawingmode_changed', clearZoneSelection);
-  google.maps.event.addListener(map, 'click', clearZoneSelection);
 }
 
 

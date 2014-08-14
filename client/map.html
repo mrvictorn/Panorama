@@ -44,7 +44,7 @@
 	  						<th class="text-right">{{numAllEntrances}}</th>
 	  						<th class="text-right">{{numAllHouseHolds}}</th>
 	  					</tr>
-	  					{{#each zones}}
+	  					{{#each listzones}}
 	  					<tr>
 	  						<th class="zone-cell" id={{_id}}> {{#if isEditZoneNow _id}}
 	  								<input type="text" name="zone" id="inputEditZoneTitle" class="form-control" value="{{title}}" required="required">
@@ -67,15 +67,18 @@
 	  							<th class="text-right">{{numSelectedHouseHolds}}</th>
 		  					</tr>
 	  					{{/if}}	
+	  					</tbody>
 	  					<tfoot>
 	  						<div class="form-group">
 	  							{{#if addNewZoneNow}}
-	  								<input type="text" name="title" id="inputNewZoneTitle" class="form-control" value="*Нова зона" required="required">
+		  							<div class="col-sm-3">
+		  								<input type="text" name="title" id="addNewZoneTitle" class="form-control" value="*Нова зона" required="required">
+		  							</div>
+	  							{{else}}
+	  								<button id='btnAddZone' type="button" class="btn btn-sm "> <span class="glyphicon glyphicon-plus"></span> Додати зону</button>
 	  							{{/if}}
-	  							<button id='btnAddZone' type="button" class="btn btn-sm "> <span class="glyphicon glyphicon-plus"></span> Додати зону</button>
 	  						</div>
 	  					</tfoot>
-	  					</tbody>
 	  				</table>
 				</div>	
 			</div>
