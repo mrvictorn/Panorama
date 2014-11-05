@@ -90,26 +90,12 @@ Template.mapCanvas2.events({
     getPositions2HouseHolds();
   },
   'click #btnAddZone':  function(e, tmpl) {
-    e.preventDefault();
-    // 2 add: disable button btnAddNewZone
-    st=Session.get("addNewZoneNow");
-    if (st) {
-      title=tmpl.find("#inputNewZoneTitle").value;
-      n=Zones.find().count();
-      color=fullColorPalette[n]||"#999999";
-      // 2 add: check for sanity and unique our  inputNewZoneTitle.value !!!
-      if (!(title ==="")){
-        Zones.insert({title:title,type:ZONE_TYPE_HOUSEHOLDS,color:color});
-        tmpl.find("#inputNewZoneTitle").value="";
-        Session.set("addNewZoneNow",  false);   
-      } 
-    }
-    else {Session.set("addNewZoneNow",  true);};
+    Session.set("addNewZoneNow", ! Session.get("addNewZoneNow"));   
   },
-  'dblclick .zone-cell':  function(e, tmpl) {
+  'dblclick .zone-title':  function(e, tmpl) {
     e.preventDefault();
     id=e.target.id;
-    if(Session.get("EditZoneNow")==null) {Session.set("EditZoneNow",id);};
+    Session.set("EditZoneNow",id);
   },
   'click .edit-zone-bounds':  function(e, tmpl) {
     e.preventDefault();
@@ -140,6 +126,21 @@ Template.mapCanvas2.events({
         Zones.update({_id:Session.get("EditZoneNow")}, {$set: {title:newTitle}});
       }
      Session.set("EditZoneNow",null); 
+   } 
+
+  },
+  'keypress #addNewZoneTitle':function(e, tmpl) {
+    if(e.keyCode == 13){
+      e.preventDefault();
+      title=tmpl.find("#addNewZoneTitle").value;
+      n=Zones.find().count();
+      color=fullColorPalette[n]||"#999999";
+      if (!(title ==="")){
+        Zones.insert({title:title,type:ZONE_TYPE_HOUSEHOLDS,color:color});
+        tmpl.find("#addNewZoneTitle").value="";
+        Session.set("addNewZoneNow", false);   
+      }
+     
    }
   },    
  /* 'click':function(e, tmpl) {//chasing for marker click evt
@@ -515,6 +516,9 @@ liveZones = function(map, cursor) {
 function keyController(evt){
   if(evt.keyCode==27 && Session.get("addNewZoneNow")) {
     Session.set("addNewZoneNow", false);
+  }; 
+  if(evt.keyCode==27 && Session.get("EditZoneNow")) {
+    Session.set("EditZoneNow", false);
   }; 
   if(evt.keyCode==27 && Session.get("EditZoneBounds")){
       Session.set("EditZoneBounds",null);

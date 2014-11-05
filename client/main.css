@@ -1,3 +1,9 @@
+.zone-cell {
+	height:auto;
+	overflow: hidden;
+}
+
+
 #map-canvas {
     width: 100%;
     height: 100vh;
@@ -10,6 +16,12 @@
 
 #map-container{
 	padding:0px;
+}
+
+.zone-title{
+	float:none;
+	width:auto;
+	overflow:hidden;
 }
 
 .delete-button, .edit-zone-bounds {

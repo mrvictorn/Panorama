@@ -39,48 +39,57 @@
 						</thead>
 						<tbody>
 	  					<tr>
-	  						<th><button id='btnShowAllPoints' type="button" class="btn btn-sm {{isCheckedAP}}"> Всі разом </button></th>
-	  						<th class="text-right">{{numBuildings}}</th>
-	  						<th class="text-right">{{numAllEntrances}}</th>
-	  						<th class="text-right">{{numAllHouseHolds}}</th>
+	  						<td>
+		  						<button id='btnShowAllPoints' type="button" class="btn btn-sm {{isCheckedAP}}"> Всі разом </button>
+		  					</td>
+	  						<td class="text-right">{{numBuildings}}</td>
+	  						<td class="text-right">{{numAllEntrances}}</td>
+	  						<td class="text-right">{{numAllHouseHolds}}</td>
 	  					</tr>
 	  					{{#each listzones}}
 	  					<tr>
-	  						<th class="zone-cell" id={{_id}}> {{#if isEditZoneNow _id}}
-	  								<input type="text" name="zone" id="inputEditZoneTitle" class="form-control" value="{{title}}" required="required">
-	  							{{else}}
-	  								{{title}}
-	  								<span class="edit-zone-bounds glyphicon {{zoneBoundsMode _id}}" id="editZone{{_id}}" style="color:{{color}}"></span>
-	  								<span class="delete-button glyphicon glyphicon-remove" id="deleteZone{{_id}}"></span>
-	  							{{/if}} 
-	  						</th>
-	  						<th class="text-right"> {{zone.buildingsTotal}}</th>	
-	  						<th class="text-right"> {{zone.entrancesTotal}}</th>
-	  						<th class="text-right"> {{zone.entrancesHouseHolds}}</th>
+	  						<td>
+	  							<div class="zone-cell">
+		  							{{#if isEditZoneNow _id}}
+		  								<input type="text" name="zone" id="inputEditZoneTitle" class="form-control input-sm" value="{{title}}"  required="required">
+		  							{{else}}
+		  								<span class="edit-zone-bounds glyphicon {{zoneBoundsMode _id}}" id="editZone{{_id}}" style="color:{{color}}"></span>
+		  								<span class="delete-button glyphicon glyphicon-remove" id="deleteZone{{_id}}"></span>
+		  								<span class="zone-title" id={{_id}}>{{title}}</span>
+		  							{{/if}} 
+	  							</div> 
+	  						</td>
+	  						<td class="text-right"> {{zone.buildingsTotal}}</td>	
+	  						<td class="text-right"> {{zone.entrancesTotal}}</td>
+	  						<td class="text-right"> {{zone.entrancesHouseHolds}}</td>
 	  					</tr>
 	  					{{/each}}
 	  					{{#if hasSelectedMarkers}}
 		  					<tr>
-		  						<th id="selected">Вибрано:</th>
-		  						<th class="text-right">{{numSelectedBuildings}}</th>
-	  							<th class="text-right">{{numSelectedEntrances}}</th>
-	  							<th class="text-right">{{numSelectedHouseHolds}}</th>
+		  						<td id="selected">Вибрано:</td>
+		  						<td class="text-right">{{numSelectedBuildings}}</td>
+	  							<td class="text-right">{{numSelectedEntrances}}</td>
+	  							<td class="text-right">{{numSelectedHouseHolds}}</td>
 		  					</tr>
 	  					{{/if}}	
 	  					</tbody>
 	  					<tfoot>
-	  						<div class="form-group">
-	  							{{#if addNewZoneNow}}
-		  							<div class="col-sm-3">
-		  								<input type="text" name="title" id="addNewZoneTitle" class="form-control" value="*Нова зона" required="required">
-		  							</div>
-	  							{{else}}
-	  								<button id='btnAddZone' type="button" class="btn btn-sm "> <span class="glyphicon glyphicon-plus"></span> Додати зону</button>
-	  							{{/if}}
-	  						</div>
+	  						
 	  					</tfoot>
 	  				</table>
+	  				<form class="form-inline" role="form">
+	  				<div class="form-group">
+						{{#if addNewZoneNow}}
+							<input type="text" name="title" id="addNewZoneTitle" class="form-control input-sm" required="required" placeholder="Назва нової зони">
+						{{else}}
+							<button id='btnAddZone' type="button" class="btn btn-sm"> <span class="glyphicon glyphicon-plus"></span> Додати зону</button>
+						{{/if}}
+					</div>
+					</form>
 				</div>	
+			</div>
+			<div class="row">
+				<br/>
 			</div>
 			<div class="row">
 				<div class="totals">
